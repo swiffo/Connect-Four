@@ -137,7 +137,7 @@ class ConnectFour:
             return False
 
         for x_jump, y_jump in [(1, 0), (0, 1), (1, 1), (1, -1)]:
-            count = 1 
+            same_colour_in_sequence_count = 1 
             for direction in [1, -1]:
                 x_pos, y_pos = row, column
                 x_jump *= direction
@@ -152,10 +152,10 @@ class ConnectFour:
                         break
 
                     if new_colour == colour_at_location:
-                        count += 1
+                        same_colour_in_sequence_count += 1
                     else:
                         break
-            if count >= 4:
+            if same_colour_in_sequence_count >= 4:
                 return True
 
         # If we have made it here, it means no winning condition is satisfied
