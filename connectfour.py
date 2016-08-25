@@ -43,6 +43,8 @@ class ConnectFour:
 
     def __init__(self):
         """Init ConnectFour()"""
+
+        # Position (0, 0) is interpreted as lower left
         self._grid = np.full((ROWS, COLUMNS), EMPTY, dtype='i1')
 
         hash_matrix = np.empty((ROWS, COLUMNS), dtype='i8')
@@ -130,75 +132,31 @@ class ConnectFour:
             four in a row.
         """
 
-        colour = self._grid[row, column]
+        colour_at_location = self._grid[row, column]
+        if colour_at_location == EMPTY:
+            return False
 
-        # vertical
-        vertical_count = 1
-        for check_row in range(row-1, -1, -1):
-            if self._grid[check_row, column] == colour:
-                vertical_count += 1
-            else:
-                break
+        for x_jump, y_jump in [(1, 0), (0, 1), (1, 1), (1, -1)]:
+            count = 1 
+            for direction in [1, -1]:
+                x_pos, y_pos = row, column
+                x_jump *= direction
+                y_jump *= direction
 
-        for check_row in range(row+1, ROWS):
-            if self._grid[check_row, column] == colour:
-                vertical_count += 1
-            else:
-                break
+                while True:
+                    x_pos += x_jump
+                    y_pos += y_jump
+                    try:
+                        new_colour = self._grid[x_pos, y_pos]
+                    except IndexError:
+                        break
 
-        if vertical_count >= 4:
-            return True
-
-        # horizontal_count
-        horizontal_count = 1
-        for check_column in range(column-1, -1, -1):
-            if self._grid[row, check_column] == colour:
-                horizontal_count += 1
-            else:
-                break
-
-        for check_column in range(column+1, COLUMNS):
-            if self._grid[row, check_column] == colour:
-                horizontal_count += 1
-            else:
-                break
-
-        if horizontal_count >= 4:
-            return True
-
-        # lower-left, upper-right diagonal
-        slash_count = 1
-        for check_row, check_column in zip(range(row+1, ROWS), range(column+1, COLUMNS)):
-            if self._grid[check_row, check_column] == colour:
-                slash_count += 1
-            else:
-                break
-
-        for check_row, check_column in zip(range(row-1, -1, -1), range(column-1, -1, -1)):
-            if self._grid[check_row, check_column] == colour:
-                slash_count += 1
-            else:
-                break
-
-        if slash_count >= 4:
-            return True
-
-        # upper-left, lower-right diagonal
-        backslash_count = 1
-        for check_row, check_column in zip(range(row+1, ROWS), range(column-1, -1, -1)):
-            if self._grid[check_row, check_column] == colour:
-                backslash_count += 1
-            else:
-                break
-
-        for check_row, check_column in zip(range(row-1, -1, -1), range(column+1, COLUMNS)):
-            if self._grid[check_row, check_column] == colour:
-                backslash_count += 1
-            else:
-                break
-
-        if backslash_count >= 4:
-            return True
+                    if new_colour == colour_at_location:
+                        count += 1
+                    else:
+                        break
+            if count >= 4:
+                return True
 
         # If we have made it here, it means no winning condition is satisfied
         return False
