@@ -47,7 +47,7 @@ class ConnectFour:
         # Position (0, 0) is interpreted as lower left
         self._grid = np.full((ROWS, COLUMNS), EMPTY, dtype='i1')
 
-        hash_matrix = np.empty((ROWS, COLUMNS), dtype='i8')
+        hash_matrix = np.empty((ROWS, COLUMNS), dtype=np.int64)
         for row in range(ROWS):
             for col in range(COLUMNS):
                 hash_matrix[row, col] = 3**(row+col*ROWS)
@@ -63,7 +63,7 @@ class ConnectFour:
             List of columns with room for at least one more disc
         """
 
-        return [col for col in range(COLUMNS) if self._grid[ROWS-1, col] != EMPTY]
+        return [col for col in range(COLUMNS) if self._grid[ROWS-1, col] == EMPTY]
 
     def add_disc(self, column, colour):
         """Add disc to game grid
@@ -88,7 +88,7 @@ class ConnectFour:
         """Return hashable identifier
 
         Returns:
-            An hashable identifier for the state of the grid.
+            A hashable identifier for the state of the grid.
         """
         return np.sum(self._hash_matrix * self._grid)
 
@@ -182,3 +182,38 @@ class IllegalMove(Error):
     An illegal move would be to add a disc to a full column or a non-existing column
     """
     pass
+
+def test():
+    """Run simple tests of the module."""
+
+    # Test winner
+    game = ConnectFour()
+    assert game.legal_moves() == list(range(COLUMNS))
+    assert game.winner() is None
+
+    for column, disc_colour in [(3, WHITE), (2, RED), (4, WHITE), (1, RED), (5, WHITE), (0, RED)]:
+        game.add_disc(column, disc_colour)
+        assert game.legal_moves() == list(range(COLUMNS))
+        assert game.winner() is None
+
+    game.add_disc(6, WHITE)
+    assert game.winner() == WHITE
+
+    # Test legal_moves
+    game = ConnectFour()
+    assert game.legal_moves() == list(range(COLUMNS))
+
+    colour = None
+    for _move in range(ROWS):
+        if colour == RED:
+            colour = WHITE
+        else:
+            colour = RED
+
+        game.add_disc(3, colour)
+
+    assert game.legal_moves() == [column for column in range(COLUMNS) if column != 3]
+
+
+if __name__ == '__main__':
+    test()
