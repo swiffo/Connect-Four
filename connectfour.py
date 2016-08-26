@@ -47,13 +47,6 @@ class ConnectFour:
         # Position (0, 0) is interpreted as lower left
         self._grid = np.full((ROWS, COLUMNS), EMPTY, dtype='i1')
 
-        hash_matrix = np.empty((ROWS, COLUMNS), dtype=np.int64)
-        for row in range(ROWS):
-            for col in range(COLUMNS):
-                hash_matrix[row, col] = 3**(row+col*ROWS)
-
-        self._hash_matrix = hash_matrix
-
         self._winner = None
 
     def legal_moves(self):
@@ -90,7 +83,25 @@ class ConnectFour:
         Returns:
             A hashable identifier for the state of the grid.
         """
-        return np.sum(self._hash_matrix * self._grid)
+
+        column_identifiers = []
+
+        for column in range(COLUMNS):
+            column_identifier = 0
+            row_multiplier = 1
+            for colour in self._grid[:, column]:
+                if colour == WHITE:
+                    column_identifier += 2 * row_multiplier
+                elif colour == RED:
+                    column_identifier += row_multiplier
+                else:
+                    break
+                row_multiplier *= 3
+            column_identifiers.append(column_identifier)
+
+        identifier = tuple(column_identifiers)
+
+        return identifier
 
     def next_state_identifier(self, column, colour):
         """Return hashable identifier for the state following the specified move.
@@ -109,10 +120,19 @@ class ConnectFour:
         else:
             raise IllegalMove
 
-        present_identifier = self.state_identifier()
-        next_identifier = present_identifier + self._hash_matrix[row, column] * colour
+        identifier = self.state_identifier()
+        if colour == WHITE:
+            additional_identifier = 2 * 3**row
+        elif colour == RED:
+            additional_identifier = 3**row
+        else:
+            raise ValueError('Unhandled colour')
 
-        return next_identifier
+        identifier = list(identifier)
+        identifier[column] += additional_identifier
+        identifier = tuple(identifier)
+
+        return identifier
 
     def winner(self):
         """Return winner of the game
@@ -137,7 +157,7 @@ class ConnectFour:
             return False
 
         for x_jump, y_jump in [(1, 0), (0, 1), (1, 1), (1, -1)]:
-            same_colour_in_sequence_count = 1 
+            same_colour_in_sequence_count = 1
             for direction in [1, -1]:
                 x_pos, y_pos = row, column
                 x_jump *= direction
@@ -186,13 +206,20 @@ class IllegalMove(Error):
 def test():
     """Run simple tests of the module."""
 
-    # Test winner
+    # Test winner and state identifier
     game = ConnectFour()
     assert game.legal_moves() == list(range(COLUMNS))
     assert game.winner() is None
 
+    last_state_id = None
     for column, disc_colour in [(3, WHITE), (2, RED), (4, WHITE), (1, RED), (5, WHITE), (0, RED)]:
+        next_state_id = game.next_state_identifier(column, disc_colour)
         game.add_disc(column, disc_colour)
+
+        state_id = game.state_identifier()
+        assert state_id != last_state_id
+        assert next_state_id == state_id
+        last_state_id = state_id
         assert game.legal_moves() == list(range(COLUMNS))
         assert game.winner() is None
 
