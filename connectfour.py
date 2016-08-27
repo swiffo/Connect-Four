@@ -72,7 +72,14 @@ class ConnectFour:
             if self._grid[row, column] == EMPTY:
                 self._grid[row, column] = colour
                 if self._check_winner_at_location(row, column):
-                    self._winner = colour
+                    if colour == RED:
+                        winner = PLAYER_RED
+                    elif colour == WHITE:
+                        winner = PLAYER_WHITE
+                    else:
+                        raise ValueError('Unhandled colour: {}'.format(colour))
+
+                    self._winner = winner
                 break
         else:
             raise IllegalMove
@@ -203,6 +210,86 @@ class IllegalMove(Error):
     """
     pass
 
+def test_horizontal_winner():
+    """Test detection of horizontal win
+
+    We fill out the following position:
+    .......
+    RRRRWWW
+    RRWWRWW
+    """
+    moves = [(3, WHITE), (4, RED), (5, WHITE), (0, RED), (4, WHITE), (0, RED),
+             (2, WHITE), (2, RED), (6, WHITE), (1, RED), (6, WHITE), (1, RED),
+             (5, WHITE), (3, RED)]
+
+    game = ConnectFour()
+    assert game.winner() is None
+    for column, colour in moves[:-1]:
+        game.add_disc(column, colour)
+        assert game.winner() is None
+
+    game.add_disc(moves[-1][0], moves[-1][1])
+    assert game.winner() is PLAYER_RED
+
+def test_vertical_winner():
+    """Test detection of vertical win
+
+    We fill out the following position:
+
+    ..
+    .W
+    .W
+    .W.
+    RWR
+    WRR....
+    """
+    moves = [(0, WHITE), (1, RED), (1, WHITE), (2, RED), (1, WHITE), (0, RED),
+             (1, WHITE), (2, RED), (1, WHITE)]
+
+    game = ConnectFour()
+    assert game.winner() is None
+    for column, colour in moves[:-1]:
+        game.add_disc(column, colour)
+        assert game.winner() is None
+
+    game.add_disc(moves[-1][0], moves[-1][0])
+    assert game.winner() is PLAYER_WHITE
+
+def test_diagonal_winner():
+    """Test detection of a win in forward slash.
+
+    We fill out the following position:
+
+    ...RW
+    ...WR
+    ..WRW
+    .WRWR
+
+    as well as its mirroring.
+    """
+    moves = [(1, WHITE), (2, RED), (3, WHITE), (4, RED), (2, WHITE), (3, RED),
+             (4, WHITE), (4, RED), (3, WHITE), (3, RED), (4, WHITE)]
+
+    game = ConnectFour()
+    assert game.winner() is None
+    for column, colour in moves[:-1]:
+        game.add_disc(column, colour)
+        assert game.winner() is None
+
+    game.add_disc(moves[-1][0], moves[-1][0])
+    assert game.winner() is PLAYER_WHITE
+
+    # Mirror example
+    game = ConnectFour()
+    assert game.winner() is None
+    for column, colour in moves[:-1]:
+        mirror_column = COLUMNS - column - 1
+        game.add_disc(mirror_column, colour)
+        assert game.winner() is None
+
+    game.add_disc(COLUMNS - moves[-1][0] - 1, moves[-1][0])
+    assert game.winner() is PLAYER_WHITE
+
 def test():
     """Run simple tests of the module."""
 
@@ -224,7 +311,7 @@ def test():
         assert game.winner() is None
 
     game.add_disc(6, WHITE)
-    assert game.winner() == WHITE
+    assert game.winner() == PLAYER_WHITE
 
     # Test legal_moves
     game = ConnectFour()
@@ -243,4 +330,7 @@ def test():
 
 
 if __name__ == '__main__':
+    test_horizontal_winner()
+    test_vertical_winner()
+    test_diagonal_winner()
     test()
