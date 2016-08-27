@@ -44,7 +44,7 @@ class ConnectFour:
     def __init__(self):
         """Init ConnectFour()"""
 
-        # Position (0, 0) is interpreted as lower left
+        # Position (0, 0) is interpreted as lower left. Discs are dropped from the top.
         self._grid = np.full((ROWS, COLUMNS), EMPTY, dtype='i1')
 
         self._winner = None
@@ -149,6 +149,15 @@ class ConnectFour:
             Otherwise returns None.
         """
         return self._winner
+
+    def grid_copy(self):
+        """Return copy of the game grid.
+
+        Returns:
+            game grid as np.array (matrix of size ROWS x COLUMNS). Entries in 
+            matrix are RED, WHITE and EMPTY. Lower left is (0,0).
+        """
+        return self._grid.copy()
 
     def _check_winner_at_location(self, row, column):
         """Check whether there are 4 in a row involving the disc at the
