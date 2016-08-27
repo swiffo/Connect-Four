@@ -77,7 +77,7 @@ class HumanPlayer:
         # TODO: Move to set_player_colour
         if self._player_colour == connectfour.WHITE:
             player_colour_string = 'white'
-        elif player_colour == connectfour.RED:
+        elif self._player_colour == connectfour.RED:
             player_colour_string = 'red'
         else:
             raise ValueError('Unhandled colour')
