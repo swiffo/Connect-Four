@@ -148,9 +148,19 @@ class AfterStatePlayer:
 
         if self._is_learning and random.random() < self._epsilon:
             proposed_move = random.choice(potential_moves)
-            # TODO: What to do here ... ?
-            self._next_afterstate_value = None
-            self._next_afterstate_matrix = None
+            
+            # We set _last_... to None to stop learning from this move.
+            self._last_afterstate_value = None
+            self._last_afterstate_matrix = None
+
+            # As it is guaranteed to be a legal move, we don't need exception protection.
+            for row in range(connectfour.ROWS):
+                if grid_matrix[row, proposed_move] == connectfour.EMPTY:
+                    grid_matrix[row, proposed_move] = self._player_colour
+                    break
+
+            self._next_afterstate_value = self._state_value(grid_matrix)
+            self._next_afterstate_matrix = grid_matrix
         else:
             best_afterstate_matrix = None
             best_afterstate_value = - np.inf
@@ -158,7 +168,7 @@ class AfterStatePlayer:
             for move in potential_moves:
                 # As it is guaranteed to be a legal move, we don't need exception protection.
                 for row in range(connectfour.ROWS):
-                    if row == connectfour.EMPTY:
+                    if grid_matrix[row, move] == connectfour.EMPTY:
                         grid_matrix[row, move] = self._player_colour
                         break
 
@@ -203,8 +213,8 @@ class AfterStatePlayer:
             new_parameter_vector = self._parameter_vector() + delta_parameter_vector()
             self._set_parameter_vector(new_parameter_vector)
 
-            self._last_afterstate_value = self._next_afterstate_value
-            self._last_afterstate_matrix = self._next_afterstate_matrix
+        self._last_afterstate_value = self._next_afterstate_value
+        self._last_afterstate_matrix = self._next_afterstate_matrix
 
     def set_learning_state(self, is_on):
         """Toggle learning and exploration on and off.
