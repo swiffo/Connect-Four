@@ -276,7 +276,7 @@ def test_diagonal_winner():
         game.add_disc(column, colour)
         assert game.winner() is None
 
-    game.add_disc(moves[-1][0], moves[-1][0])
+    game.add_disc(moves[-1][0], moves[-1][1])
     assert game.winner() is PLAYER_WHITE
 
     # Mirror example
@@ -287,7 +287,7 @@ def test_diagonal_winner():
         game.add_disc(mirror_column, colour)
         assert game.winner() is None
 
-    game.add_disc(COLUMNS - moves[-1][0] - 1, moves[-1][0])
+    game.add_disc(COLUMNS - moves[-1][0] - 1, moves[-1][1])
     assert game.winner() is PLAYER_WHITE
 
 def test():
