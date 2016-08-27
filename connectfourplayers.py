@@ -1,9 +1,13 @@
 """Player classes for the ConnectFour game.
 
 A player class must implement the following methods:
+    set_player_colour(self, player_colour):
+        player_colour: RED or WHITE as defined connectfour.py
+
+        This is called when a player is first created.
+
     propose_move(self, game_grid, player_colour):
         game_grid: instance of ConnectFour() giving current game positions
-        player_colour: the colour of the player
 
         Must return int signifying the column to which to add a disc
 
@@ -22,6 +26,10 @@ import connectfourgame
 
 class RandomPlayer:
     """A player making a random legal move each turn."""
+
+    def set_player_colour(self, player_colour):
+        """Ignored"""
+        pass
 
     def propose_move(self, game_grid, player_colour):
         """Propose next move.
@@ -48,7 +56,15 @@ class RandomPlayer:
 class HumanPlayer:
     """A player taking input from user"""
 
-    def propose_move(self, game_grid, player_colour):
+    def __init__(self):
+        """Init HumanPlayer()"""
+        self._player_colour = None
+
+    def set_player_colour(self, player_colour):
+        """Register the colour of this player's discs"""
+        self._player_colour = player_colour
+
+    def propose_move(self, game_grid):
         """Propose next move.
 
         Args:
@@ -58,7 +74,8 @@ class HumanPlayer:
         Returns:
             The column to which to add a disc (int)
         """
-        if player_colour == connectfour.WHITE:
+        # TODO: Move to set_player_colour
+        if self._player_colour == connectfour.WHITE:
             player_colour_string = 'white'
         elif player_colour == connectfour.RED:
             player_colour_string = 'red'
@@ -115,7 +132,7 @@ class AfterStatePlayer:
         """
         self._player_colour = player_colour
 
-    def propose_move(self, game_grid, player_colour):
+    def propose_move(self, game_grid):
         """Propose next move.
 
         Args:
@@ -142,7 +159,7 @@ class AfterStatePlayer:
                 # As it is guaranteed to be a legal move, we don't need exception protection.
                 for row in range(connectfour.ROWS):
                     if row == connectfour.EMPTY:
-                        grid_matrix[row, move] = player_colour
+                        grid_matrix[row, move] = self._player_colour
                         break
 
                 afterstate_value = self._state_value(grid_matrix)
@@ -248,4 +265,3 @@ class AfterStatePlayer:
             np.array. Nabla of state grid_matrix with respect to parameter vector.
         """
         pass
-        

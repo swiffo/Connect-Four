@@ -24,6 +24,8 @@ class ConnectFourMatch:
             player_red: player object for red discs (goes second)
         """
 
+        player_white.set_player_colour(connectfour.WHITE)
+        player_red.set_player_colour(connectfour.RED)
         self._player_white = player_white
         self._player_red = player_red
 
