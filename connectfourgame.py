@@ -28,7 +28,12 @@ class ConnectFourMatch:
         self._player_red = player_red
 
     def play(self):
-        """Play match of Connect Four"""
+        """Play match of Connect Four.
+        
+        Each player will have alternately propose_move and receive_reward called in that order 
+        and the same amount of times. That is, the last a player experiences of a game is always
+        a call to receive_reward and it always starts with propose_move.
+        """
 
         max_number_of_moves = connectfour.ROWS * connectfour.COLUMNS
         players = ((self._player_white, connectfour.WHITE), (self._player_red, connectfour.RED))
@@ -36,26 +41,29 @@ class ConnectFourMatch:
 
         for move_number in range(max_number_of_moves):
             current_player, current_colour = players[move_number%2]
+            other_player = players[(move_number+1)%2][0]
+
             move = current_player.propose_move(game_grid, current_colour)
+
             try:
                 game_grid.add_disc(move, current_colour)
             except connectfour.IllegalMove:
                 current_player.receive_reward(REWARD_ILLEGAL_MOVE)
-                other_player = players[(move_number+1)%2][0]
                 other_player.receive_reward(REWARD_WIN)
                 break
 
             if game_grid.winner() is not None:
                 current_player.receive_reward(REWARD_WIN)
-                other_player = players[(move_number+1)%2][0]
                 other_player.receive_reward(REWARD_LOSS)
                 break
             else:
-                current_player.receive_reward(REWARD_LEGAL_MOVE)
-        else:
-            for player, dummy_colour in players:
-                player.receive_reward(REWARD_DRAW)
-
+                # If this is the last move of the game, both players must end with REWARD_DRAW
+                if move_number == max_number_of_moves - 1:
+                    current_player.receive_reward(REWARD_DRAW)
+                    other_player.receive_reward(REWARD_DRAW)
+                # Otherwise the other player is simply rewarded with REWARD_LEGAL_MOVE
+                else:
+                    other_player.receive_reward(REWARD_LEGAL_MOVE)
 
 def test_random_players():
     """Tests whether a game can be played without raising exceptions"""
