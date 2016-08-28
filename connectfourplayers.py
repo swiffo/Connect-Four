@@ -163,11 +163,11 @@ class AfterStatePlayer:
             best_afterstate_matrix = None
             best_afterstate_value = - np.inf
 
-            for move in potential_moves:
+            for proposed_move in potential_moves:
                 # As it is guaranteed to be a legal move, we don't need exception protection.
                 for row in range(connectfour.ROWS):
-                    if grid_matrix[row, move] == connectfour.EMPTY:
-                        grid_matrix[row, move] = self._player_colour
+                    if grid_matrix[row, proposed_move] == connectfour.EMPTY:
+                        grid_matrix[row, proposed_move] = self._player_colour
                         break
 
                 afterstate_value = self._state_value(grid_matrix)
@@ -176,7 +176,7 @@ class AfterStatePlayer:
                     best_afterstate_matrix = grid_matrix.copy()
 
                 # Back to original state
-                grid_matrix[row, move] = connectfour.EMPTY
+                grid_matrix[row, proposed_move] = connectfour.EMPTY
 
             # At this point we are guaranteed to have a best_afterstate_matrix
             # as propose_move is contractually only called when there are legal
@@ -208,7 +208,7 @@ class AfterStatePlayer:
             nabla_vector = self._nabla_parameter_vector(self._last_afterstate_matrix)
 
             delta_parameter_vector = self._alpha * (next_value - last_value) * nabla_vector
-            new_parameter_vector = self._parameter_vector() + delta_parameter_vector()
+            new_parameter_vector = self._parameter_vector() + delta_parameter_vector
             self._set_parameter_vector(new_parameter_vector)
 
         self._last_afterstate_value = self._next_afterstate_value
@@ -335,3 +335,19 @@ class SimpleFeaturePlayer(AfterStatePlayer):
             np.array. Nabla of state grid_matrix with respect to parameter vector.
         """
         return self._features(grid_matrix)
+
+
+def test_simplefeatureplayer():
+    """Run match of 2 SimpleFeaturePlayer() instances"""
+    import connectfourgame
+    player_white = SimpleFeaturePlayer()
+    player_red = SimpleFeaturePlayer()
+    match = connectfourgame.ConnectFourMatch(player_white, player_red)
+    match.play()
+
+def test():
+    """Execute all tests for this module"""
+    test_simplefeatureplayer()
+
+if __name__ == '__main__':
+    test()
