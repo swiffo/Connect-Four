@@ -31,8 +31,8 @@ class ConnectFourMatch:
 
     def play(self):
         """Play match of Connect Four.
-        
-        Each player will have alternately propose_move and receive_reward called in that order 
+
+        Each player will have alternately propose_move and receive_reward called in that order
         and the same amount of times. That is, the last a player experiences of a game is always
         a call to receive_reward and it always starts with propose_move.
         """
@@ -72,5 +72,9 @@ def test_random_players():
     match = ConnectFourMatch(connectfourplayers.RandomPlayer(), connectfourplayers.RandomPlayer())
     match.play()
 
-if __name__ == '__main__':
+def test():
+    """Execute full test suite"""
     test_random_players()
+
+if __name__ == '__main__':
+    test()
