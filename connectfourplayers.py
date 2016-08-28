@@ -23,6 +23,7 @@ import random
 import numpy as np
 import connectfour
 import connectfourgame
+import connectfourutils
 
 class RandomPlayer:
     """A player making a random legal move each turn."""
@@ -31,7 +32,7 @@ class RandomPlayer:
         """Ignored"""
         pass
 
-    def propose_move(self, game_grid, player_colour):
+    def propose_move(self, game_grid):
         """Propose next move.
 
         Args:
@@ -58,11 +59,16 @@ class HumanPlayer:
 
     def __init__(self):
         """Init HumanPlayer()"""
-        self._player_colour = None
+        self._player_colour_string = None
 
     def set_player_colour(self, player_colour):
         """Register the colour of this player's discs"""
-        self._player_colour = player_colour
+        if player_colour == connectfour.WHITE:
+            self._player_colour_string = 'white'
+        elif player_colour == connectfour.RED:
+            self._player_colour_string = 'red'
+        else:
+            raise ValueError('Unhandled colour: {}'.format(player_colour))
 
     def propose_move(self, game_grid):
         """Propose next move.
@@ -74,15 +80,7 @@ class HumanPlayer:
         Returns:
             The column to which to add a disc (int)
         """
-        # TODO: Move to set_player_colour
-        if self._player_colour == connectfour.WHITE:
-            player_colour_string = 'white'
-        elif self._player_colour == connectfour.RED:
-            player_colour_string = 'red'
-        else:
-            raise ValueError('Unhandled colour')
-
-        print('You a playing {}'.format(player_colour_string))
+        print('You a playing {}'.format(self._player_colour_string))
         print(game_grid)
         print('Choose column (0 (left) to {} (right):'.format(connectfour.COLUMNS-1))
         while True:
@@ -148,7 +146,7 @@ class AfterStatePlayer:
 
         if self._is_learning and random.random() < self._epsilon:
             proposed_move = random.choice(potential_moves)
-            
+
             # We set _last_... to None to stop learning from this move.
             self._last_afterstate_value = None
             self._last_afterstate_matrix = None
@@ -275,3 +273,65 @@ class AfterStatePlayer:
             np.array. Nabla of state grid_matrix with respect to parameter vector.
         """
         pass
+
+class SimpleFeaturePlayer(AfterStatePlayer):
+    """Player using linear value approximation"""
+
+    def __init__(self):
+        """Init SimpleFeaturePlayer()"""
+        super().__init__()
+        self._parameters = np.random.rand(5) # Must match size of features
+
+    def _features(self, grid_matrix):
+        """Return feature vector.
+
+        Args:
+            grid_matrix (np.array): The game grid as matrix
+
+        Returns:
+            Vector (np.array) of the feature values
+        """
+        return connectfourutils.count_open_positions(grid_matrix, self._player_colour)
+
+    def _state_value(self, grid_matrix):
+        """The estimated value of the given state matrix.
+
+
+        Args:
+            grid_matrix (np.array): The Connect Four grid as a matrix (as defined in connectfour.py)
+
+        Returns:
+            Estimated value of the state corresponding to the input matrix.
+        """
+        features = self._features(grid_matrix)
+        parameter_vector = self._parameter_vector()
+        return np.dot(features, parameter_vector)
+
+    def _parameter_vector(self):
+        """Return the parameter vector.
+
+        Returns:
+            The parameter vector used to estimate state values
+        """
+        return self._parameters
+
+    def _set_parameter_vector(self, new_vector):
+        """Set the parameter vector.
+
+        Args:
+            new_vector (np.array): The parameter vector for estimating state
+                values.
+        """
+        self._parameters = new_vector
+
+    def _nabla_parameter_vector(self, grid_matrix):
+        """Nabla of state value func with respect to parameter vector in the
+        state defined by grid_matrix.
+
+        Args:
+            grid_matrix (np.array): The state point in which to calculate nabla.
+
+        Returns:
+            np.array. Nabla of state grid_matrix with respect to parameter vector.
+        """
+        return self._features(grid_matrix)

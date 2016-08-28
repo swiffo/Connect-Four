@@ -45,7 +45,7 @@ class ConnectFourMatch:
             current_player, current_colour = players[move_number%2]
             other_player = players[(move_number+1)%2][0]
 
-            move = current_player.propose_move(game_grid, current_colour)
+            move = current_player.propose_move(game_grid)
 
             try:
                 game_grid.add_disc(move, current_colour)
