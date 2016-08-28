@@ -17,6 +17,7 @@ A player class must implement the following methods:
 Classes:
     RandomPlayer: Makes random but always legal moves.
     HumanPlayer: Takes input from user when deciding on move.
+    SimpleFeaturePlayer: Uses linear function approximation on afterstates.
 """
 
 import random
