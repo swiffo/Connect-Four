@@ -154,7 +154,7 @@ class ConnectFour:
         """Return copy of the game grid.
 
         Returns:
-            game grid as np.array (matrix of size ROWS x COLUMNS). Entries in 
+            game grid as np.array (matrix of size ROWS x COLUMNS). Entries in
             matrix are RED, WHITE and EMPTY. Lower left is (0,0).
         """
         return self._grid.copy()
@@ -299,7 +299,7 @@ def test_diagonal_winner():
     game.add_disc(COLUMNS - moves[-1][0] - 1, moves[-1][1])
     assert game.winner() is PLAYER_WHITE
 
-def test():
+def test_simple():
     """Run simple tests of the module."""
 
     # Test winner and state identifier
@@ -337,9 +337,12 @@ def test():
 
     assert game.legal_moves() == [column for column in range(COLUMNS) if column != 3]
 
-
-if __name__ == '__main__':
+def test():
+    """Execute full test suite"""
     test_horizontal_winner()
     test_vertical_winner()
     test_diagonal_winner()
+    test_simple()
+
+if __name__ == '__main__':
     test()
