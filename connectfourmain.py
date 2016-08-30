@@ -34,7 +34,7 @@ def choose_player():
     print('(S)imple player')
 
     while True:
-        choice = input()
+        choice = input().upper()
         if choice == 'R':
             return connectfourplayers.RandomPlayer()
         elif choice == 'H':
