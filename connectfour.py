@@ -16,9 +16,6 @@ EMPTY = 0
 WHITE = 1
 RED = 2
 
-PLAYER_WHITE = 0
-PLAYER_RED = 1
-
 def _entry_to_character(entry):
     """Convert grid entry (cell) to displayable character.
 
@@ -72,14 +69,7 @@ class ConnectFour:
             if self._grid[row, column] == EMPTY:
                 self._grid[row, column] = colour
                 if self._check_winner_at_location(row, column):
-                    if colour == RED:
-                        winner = PLAYER_RED
-                    elif colour == WHITE:
-                        winner = PLAYER_WHITE
-                    else:
-                        raise ValueError('Unhandled colour: {}'.format(colour))
-
-                    self._winner = winner
+                    self._winner = colour
                 break
         else:
             raise IllegalMove
@@ -142,10 +132,10 @@ class ConnectFour:
         return identifier
 
     def winner(self):
-        """Return winner of the game
+        """Return (colour of) winner of the game
 
         Returns:
-            Winner of the game (PLAYER_WHITE or PLAYER_RED) if there is a winner.
+            Colour of winner of the game (WHITE or RED) if there is a winner.
             Otherwise returns None.
         """
         return self._winner
@@ -238,7 +228,7 @@ def test_horizontal_winner():
         assert game.winner() is None
 
     game.add_disc(moves[-1][0], moves[-1][1])
-    assert game.winner() is PLAYER_RED
+    assert game.winner() is RED
 
 def test_vertical_winner():
     """Test detection of vertical win
@@ -262,7 +252,7 @@ def test_vertical_winner():
         assert game.winner() is None
 
     game.add_disc(moves[-1][0], moves[-1][0])
-    assert game.winner() is PLAYER_WHITE
+    assert game.winner() is WHITE
 
 def test_diagonal_winner():
     """Test detection of a win in forward slash.
@@ -286,7 +276,7 @@ def test_diagonal_winner():
         assert game.winner() is None
 
     game.add_disc(moves[-1][0], moves[-1][1])
-    assert game.winner() is PLAYER_WHITE
+    assert game.winner() is WHITE
 
     # Mirror example
     game = ConnectFour()
@@ -297,7 +287,7 @@ def test_diagonal_winner():
         assert game.winner() is None
 
     game.add_disc(COLUMNS - moves[-1][0] - 1, moves[-1][1])
-    assert game.winner() is PLAYER_WHITE
+    assert game.winner() is WHITE
 
 def test_simple():
     """Run simple tests of the module."""
@@ -320,7 +310,7 @@ def test_simple():
         assert game.winner() is None
 
     game.add_disc(6, WHITE)
-    assert game.winner() == PLAYER_WHITE
+    assert game.winner() == WHITE
 
     # Test legal_moves
     game = ConnectFour()
