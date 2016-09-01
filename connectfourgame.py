@@ -23,7 +23,6 @@ class ConnectFourMatch:
             player_white: player object for white discs (goes first)
             player_red: player object for red discs (goes second)
         """
-
         player_white.set_player_colour(connectfour.WHITE)
         player_red.set_player_colour(connectfour.RED)
         self._player_white = player_white
@@ -54,7 +53,10 @@ class ConnectFourMatch:
                 game_grid.add_disc(move, current_colour)
             except connectfour.IllegalMove:
                 current_player.receive_reward(REWARD_ILLEGAL_MOVE)
-                other_player.receive_reward(REWARD_WIN)
+                # Only reward a player if he has moved to preserve the contract that
+                # we always call propose_move and receive_reward in that order
+                if move_number > 0:
+                    other_player.receive_reward(REWARD_WIN)
                 return other_colour
 
             if game_grid.winner() is not None:
@@ -62,14 +64,15 @@ class ConnectFourMatch:
                 other_player.receive_reward(REWARD_LOSS)
                 return current_colour
             else:
-                # If this is the last move of the game, we have a draw 
+                # If this is the last move of the game, we have a draw
                 if move_number == max_number_of_moves - 1:
                     current_player.receive_reward(REWARD_DRAW)
                     other_player.receive_reward(REWARD_DRAW)
                     return None
                 # Otherwise the other player is simply rewarded with REWARD_LEGAL_MOVE
                 else:
-                    other_player.receive_reward(REWARD_LEGAL_MOVE)
+                    if move_number > 0:
+                        other_player.receive_reward(REWARD_LEGAL_MOVE)
 
         # Note that we should never reach this line (if we do the code is wrong)
 
@@ -78,9 +81,49 @@ def test_random_players():
     match = ConnectFourMatch(connectfourplayers.RandomPlayer(), connectfourplayers.RandomPlayer())
     match.play()
 
+def test_method_call_sequence():
+    """Test whether propose_move and receive_reward are called in alternating sequence.
+
+    The contract is that the propose_move and receive_reward are called one after the
+    other, beginning with propose_move, and the same number of times in total.
+
+    This tests that contract.
+    """
+    class AssertiveRandomPlayer(connectfourplayers.RandomPlayer):
+        """On the fly class for testing method call sequence"""
+        def __init__(self):
+            super().__init__()
+            self.propose_move_call_count = 0
+            self.receive_reward_call_count = 0
+            self._colour = None
+
+        def set_player_colour(self, colour):
+            self._colour = colour
+
+        def propose_move(self, game_grid):
+            self.propose_move_call_count += 1
+            assert self.propose_move_call_count == self.receive_reward_call_count + 1
+            return super().propose_move(game_grid)
+
+        def receive_reward(self, reward):
+            self.receive_reward_call_count += 1
+            assert self.receive_reward_call_count == self.propose_move_call_count
+            return super().receive_reward(reward)
+
+    player1 = AssertiveRandomPlayer()
+    player2 = AssertiveRandomPlayer()
+    match = ConnectFourMatch(player1, player2)
+    match.play()
+    assert player1.propose_move_call_count > 0
+    assert player2.propose_move_call_count > 0
+    assert player1.propose_move_call_count == player1.receive_reward_call_count
+    assert player2.propose_move_call_count == player2.receive_reward_call_count
+
+
 def test():
     """Execute full test suite"""
     test_random_players()
+    test_method_call_sequence()
 
 if __name__ == '__main__':
     test()
