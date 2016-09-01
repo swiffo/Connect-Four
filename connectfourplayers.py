@@ -24,7 +24,6 @@ Classes:
 import random
 import numpy as np
 import connectfour
-import connectfourgame
 import connectfourutils
 
 class RandomPlayer:
@@ -147,7 +146,7 @@ class AfterStatePlayer:
         grid_matrix = game_grid.grid_copy()
 
         if self._is_learning and random.random() < self._epsilon:
-            proposed_move = random.choice(potential_moves)
+            chosen_move = random.choice(potential_moves)
 
             # We set _last_... to None to stop learning from this move.
             self._last_afterstate_value = None
@@ -155,8 +154,8 @@ class AfterStatePlayer:
 
             # As it is guaranteed to be a legal move, we don't need exception protection.
             for row in range(connectfour.ROWS):
-                if grid_matrix[row, proposed_move] == connectfour.EMPTY:
-                    grid_matrix[row, proposed_move] = self._player_colour
+                if grid_matrix[row, chosen_move] == connectfour.EMPTY:
+                    grid_matrix[row, chosen_move] = self._player_colour
                     break
 
             self._next_afterstate_value = self._state_value(grid_matrix)
@@ -176,6 +175,7 @@ class AfterStatePlayer:
                 if afterstate_value > best_afterstate_value:
                     best_afterstate_value = afterstate_value
                     best_afterstate_matrix = grid_matrix.copy()
+                    chosen_move = proposed_move
 
                 # Back to original state
                 grid_matrix[row, proposed_move] = connectfour.EMPTY
@@ -187,7 +187,7 @@ class AfterStatePlayer:
             self._next_afterstate_value = best_afterstate_value
             self._next_afterstate_matrix = best_afterstate_matrix
 
-        return proposed_move
+        return chosen_move
 
     def receive_reward(self, reward):
         """Record the reward for the last move.
