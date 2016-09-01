@@ -19,8 +19,10 @@ def train_players(player_white, player_red, number_of_matches):
     """
 
     match = connectfourgame.ConnectFourMatch(player_white, player_red)
-    for dummy_match_count in range(number_of_matches):
+    for match_count in range(1, number_of_matches+1):
         match.play()
+        if match_count%100 == 0:
+            print('Has trained {} times'.format(match_count))
 
 def choose_player():
     """Ask user to choose a player object.
