@@ -172,15 +172,15 @@ class ConnectFour:
                 while True:
                     x_pos += x_jump
                     y_pos += y_jump
-                    try:
-                        new_colour = self._grid[x_pos, y_pos]
-                    except IndexError:
+
+                    if x_pos >= ROWS or x_pos < 0 or y_pos >= COLUMNS or y_pos < 0:
                         break
 
-                    if new_colour == colour_at_location:
+                    if self._grid[x_pos, y_pos] == colour_at_location:
                         same_colour_in_sequence_count += 1
                     else:
                         break
+
             if same_colour_in_sequence_count >= 4:
                 return True
 
@@ -313,7 +313,6 @@ def test_simple_example_1():
         assert game.winner() is None
 
     game.add_disc(0, WHITE)
-    print(game)
     assert game.winner() is None
 
 def test_simple():
