@@ -16,6 +16,15 @@ EMPTY = 0
 WHITE = 1
 RED = 2
 
+def other_colour(colour):
+    """Return the other of the two colours."""
+    if colour == RED:
+        return WHITE
+    elif colour == WHITE:
+        return RED
+    else:
+        raise ValueError('Unrecognised colour: {}'.format(colour))   
+
 def _entry_to_character(entry):
     """Convert grid entry (cell) to displayable character.
 
@@ -43,7 +52,6 @@ class ConnectFour:
 
         # Position (0, 0) is interpreted as lower left. Discs are dropped from the top.
         self._grid = np.full((ROWS, COLUMNS), EMPTY, dtype='i1')
-
         self._winner = None
 
     def legal_moves(self):
@@ -315,6 +323,34 @@ def test_simple_example_1():
     game.add_disc(0, WHITE)
     assert game.winner() is None
 
+def test_simple_example_2():
+    """Check some locations in example game grid.
+
+    WR.RW..
+    WR.RW.R
+    WW.WR.W
+    RR.RW.R
+    WWRWR.R
+    WRWRWRW
+
+    Check location (2, 1). Added last.
+    """
+    game = ConnectFour()
+
+    for column, colour in [(0, WHITE), (0, WHITE), (0, RED), (0, WHITE), (0, WHITE),
+                           (0, WHITE), (1, RED), (1, WHITE), (1, RED), (1, WHITE),
+                           (1, RED), (1, RED), (2, WHITE), (3, RED), (3, WHITE),
+                           (3, RED), (3, WHITE), (3, RED), (3, RED), (4, WHITE),
+                           (4, RED), (4, WHITE), (4, RED), (4, WHITE), (4, WHITE),
+                           (5, RED), (6, WHITE), (6, RED), (6, RED), (6, WHITE),
+                           (6, RED)]:
+        game.add_disc(column, colour)
+        assert game.winner() is None
+
+    game.add_disc(2, RED)
+    assert game.winner() is None
+
+
 def test_simple():
     """Run simple tests of the module."""
 
@@ -360,6 +396,7 @@ def test():
     test_diagonal_winner()
     test_simple()
     test_simple_example_1()
+    test_simple_example_2()
 
 if __name__ == '__main__':
     test()
