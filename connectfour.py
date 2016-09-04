@@ -348,7 +348,7 @@ def test_simple_example_2():
         assert game.winner() is None
 
     game.add_disc(2, RED)
-    assert game.winner() is None
+    assert game.winner() is RED
 
 
 def test_simple():
