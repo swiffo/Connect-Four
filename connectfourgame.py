@@ -28,7 +28,7 @@ class ConnectFourMatch:
         self._player_white = player_white
         self._player_red = player_red
 
-    def play(self):
+    def play(self, verbose=False):
         """Play match of Connect Four. Return colour of winner.
 
         Each player will have alternately propose_move and receive_reward called in that order
@@ -57,17 +57,31 @@ class ConnectFourMatch:
                 # we always call propose_move and receive_reward in that order
                 if move_number > 0:
                     other_player.receive_reward(REWARD_WIN)
+
+                if verbose:
+                    print('Bad move: {}'.format(move))
+                    print('Winner is {}'.format(other_colour))
+                    print(game_grid)
+
                 return other_colour
 
             if game_grid.winner() is not None:
                 current_player.receive_reward(REWARD_WIN)
                 other_player.receive_reward(REWARD_LOSS)
+
+                if verbose:
+                    print('Winner is {}'.format(current_colour))
+                    print(game_grid)
+
                 return current_colour
             else:
                 # If this is the last move of the game, we have a draw
                 if move_number == max_number_of_moves - 1:
                     current_player.receive_reward(REWARD_DRAW)
                     other_player.receive_reward(REWARD_DRAW)
+                    if verbose:
+                        print('Draw')
+                        print(game_grid)
                     return None
                 # Otherwise the other player is simply rewarded with REWARD_LEGAL_MOVE
                 else:
