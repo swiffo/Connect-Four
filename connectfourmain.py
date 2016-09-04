@@ -62,7 +62,7 @@ def main():
         match = connectfourgame.ConnectFourMatch(player_white, human_player)
         match.play()
 
-        continue_playing = input('Play again? (Y/N)')
+        continue_playing = input('Play again? (Y/N)').upper()
         if not continue_playing == 'Y':
             break
 
