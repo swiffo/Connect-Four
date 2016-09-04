@@ -289,6 +289,33 @@ def test_diagonal_winner():
     game.add_disc(COLUMNS - moves[-1][0] - 1, moves[-1][1])
     assert game.winner() is WHITE
 
+def test_simple_example_1():
+    """Check some locations in example game grid.
+
+    ...RWW.
+    ...WRR.
+    .W.RRWR
+    .RRWWRW
+    WWWRRWR
+    WWRWRRW
+
+    Check location (0, 1). Added last.
+    """
+    game = ConnectFour()
+
+    for column, colour in [(0, WHITE), (1, WHITE), (1, WHITE), (1, RED), (1, WHITE),
+                           (2, RED), (2, WHITE), (2, RED), (3, WHITE), (3, RED),
+                           (3, WHITE), (3, RED), (3, WHITE), (3, RED), (4, RED),
+                           (4, RED), (4, WHITE), (4, RED), (4, RED), (4, WHITE),
+                           (5, RED), (5, WHITE), (5, RED), (5, WHITE), (5, RED),
+                           (5, WHITE), (6, WHITE), (6, RED), (6, WHITE), (6, RED)]:
+        game.add_disc(column, colour)
+        assert game.winner() is None
+
+    game.add_disc(0, WHITE)
+    print(game)
+    assert game.winner() is None
+
 def test_simple():
     """Run simple tests of the module."""
 
@@ -333,6 +360,7 @@ def test():
     test_vertical_winner()
     test_diagonal_winner()
     test_simple()
+    test_simple_example_1()
 
 if __name__ == '__main__':
     test()
