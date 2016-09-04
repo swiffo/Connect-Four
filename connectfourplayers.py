@@ -115,7 +115,7 @@ class AfterStatePlayer:
         """Init AfterStatePlayer()"""
         self._is_learning = True
         self._epsilon = 0.05
-        self._alpha = 0.1
+        self._alpha = 0.0001
         self._player_colour = None
 
         self._next_afterstate_value = None
@@ -282,7 +282,7 @@ class SimpleFeaturePlayer(AfterStatePlayer):
     def __init__(self):
         """Init SimpleFeaturePlayer()"""
         super().__init__()
-        self._parameters = np.random.rand(5) # Must match size of features
+        self._parameters = np.concatenate([np.random.rand(4), -np.random.rand(4)])
 
     def _features(self, grid_matrix):
         """Return feature vector.
@@ -293,7 +293,15 @@ class SimpleFeaturePlayer(AfterStatePlayer):
         Returns:
             Vector (np.array) of the feature values
         """
-        return connectfourutils.count_open_positions(grid_matrix, self._player_colour)
+        if self._player_colour == connectfour.RED:
+            other_colour = connectfour.WHITE
+        else:
+            other_colour = connectfour.RED
+
+        my_openings = connectfourutils.count_open_positions(grid_matrix, self._player_colour)[1:]
+        his_openings = connectfourutils.count_open_positions(grid_matrix, other_colour)[1:]
+
+        return np.concatenate([my_openings, his_openings])
 
     def _state_value(self, grid_matrix):
         """The estimated value of the given state matrix.
