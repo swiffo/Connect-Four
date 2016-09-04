@@ -115,7 +115,7 @@ class AfterStatePlayer:
         """Init AfterStatePlayer()"""
         self._is_learning = True
         self._epsilon = 0.05
-        self._alpha = 0.0001
+        self._alpha = 0.001
         self._player_colour = None
 
         self._next_afterstate_value = None
@@ -282,7 +282,16 @@ class SimpleFeaturePlayer(AfterStatePlayer):
     def __init__(self):
         """Init SimpleFeaturePlayer()"""
         super().__init__()
+        self._alpha = 0.001
+        # First 4 parameters are opportunities for the player; last 4 for the other player.
+        # See calculation of features.
         self._parameters = np.concatenate([np.random.rand(4), -np.random.rand(4)])
+        self._other_colour = None # Defined in set_player_colour
+
+    def set_player_colour(self, colour):
+        """Register the colour of the player."""
+        self._other_colour = connectfour.other_colour(colour)
+        return super().set_player_colour(colour)
 
     def _features(self, grid_matrix):
         """Return feature vector.
@@ -293,15 +302,13 @@ class SimpleFeaturePlayer(AfterStatePlayer):
         Returns:
             Vector (np.array) of the feature values
         """
-        if self._player_colour == connectfour.RED:
-            other_colour = connectfour.WHITE
-        else:
-            other_colour = connectfour.RED
+        # As features we use how many lines there are on the board containing N discs of
+        # our colour and none of the other player's colour (N=1,...,4).
+        # Also include those 4 numbers from the opponent's perspective.
+        our_openings = connectfourutils.count_open_positions(grid_matrix, self._player_colour)[1:]
+        opponents_openings = connectfourutils.count_open_positions(grid_matrix, self._other_colour)[1:]
 
-        my_openings = connectfourutils.count_open_positions(grid_matrix, self._player_colour)[1:]
-        his_openings = connectfourutils.count_open_positions(grid_matrix, other_colour)[1:]
-
-        return np.concatenate([my_openings, his_openings])
+        return np.concatenate([our_openings, opponents_openings])
 
     def _state_value(self, grid_matrix):
         """The estimated value of the given state matrix.
