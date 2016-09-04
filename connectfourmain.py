@@ -57,10 +57,10 @@ def main():
     while True:
         human_player = connectfourplayers.HumanPlayer()
         match = connectfourgame.ConnectFourMatch(human_player, player_red)
-        match.play()
+        match.play(verbose=True)
 
         match = connectfourgame.ConnectFourMatch(player_white, human_player)
-        match.play()
+        match.play(verbose=True)
 
         continue_playing = input('Play again? (Y/N)').upper()
         if not continue_playing == 'Y':
