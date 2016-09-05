@@ -46,7 +46,8 @@ def choose_player():
 
 
 def main():
-    """..."""
+    """Train two players and let user play against them.
+    """
     print('WHITE PLAYER')
     player_white = choose_player()
     print('RED PLAYER')
