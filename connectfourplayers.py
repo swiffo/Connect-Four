@@ -353,12 +353,138 @@ class SimpleFeaturePlayer(AfterStatePlayer):
         """
         return self._features(grid_matrix)
 
+class AdvancedFeaturePlayer(AfterStatePlayer):
+    """Playing using linear function approximation and experience replay"""
+
+    def __init__(self):
+        super().__init__()
+        self._other_colour = None
+        self._number_experiences_remembered = 1000
+        self._episode_size = 100
+        self._learning_frequency = 100
+        self._experiences = []
+        self._parameters = np.concatenate([np.random.rand(4), -np.random.rand(4)])
+
+    def set_player_colour(self, colour):
+        """Register the colour of the player."""
+        self._other_colour = connectfour.other_colour(colour)
+        return super().set_player_colour(colour)
+
+    def receive_reward(self, reward):
+        """Record the reward for the last move.
+
+        Args:
+            reward: The reward for the last move
+        """
+
+        if self._last_afterstate_matrix is not None:
+            self._experiences.append((self._last_afterstate_matrix, self._next_afterstate_matrix, reward))
+
+        # Update the parameters for the self._last_afterstate_matrix state
+        # unless we are explicitly not learning or it's the reward after the
+        # first move in which case there is no previous afterstate.
+
+        if self._is_learning and len(self._experiences)%self._learning_frequency == 0 and len(self._experiences) != 0:
+            if len(self._experiences) > self._number_experiences_remembered:
+                self._experiences = self._experiences[-self._number_experiences_remembered:]
+
+            episode_experiences = random.sample(self._experiences, min(self._episode_size, len(self._experiences)))
+
+            feature_matrix = []
+            target_values = []
+            for last_matrix, next_matrix, reward in episode_experiences:
+                target_values.append(self._state_value(next_matrix)+reward)
+                feature_matrix.append(self._features(last_matrix))
+
+            target_values = np.array(target_values)
+            feature_matrix = np.array(feature_matrix)
+
+            parameters = self._parameter_vector()
+            nabla_error = 2 * np.dot(feature_matrix.T, np.dot(feature_matrix, parameters) - target_values)
+
+            delta_parameter_vector = - self._alpha * nabla_error
+            new_parameter_vector = parameters + delta_parameter_vector
+            self._set_parameter_vector(new_parameter_vector)
+
+        self._last_afterstate_value = self._next_afterstate_value
+        self._last_afterstate_matrix = self._next_afterstate_matrix
+
+    def _features(self, grid_matrix):
+        """Return feature vector.
+
+        Args:
+            grid_matrix (np.array): The game grid as matrix
+
+        Returns:
+            Vector (np.array) of the feature values
+        """
+        # As features we use how many lines there are on the board containing N discs of
+        # our colour and none of the other player's colour (N=1,...,4).
+        # Also include those 4 numbers from the opponent's perspective.
+        # Try to normalize each feature so its magnitude is about 1
+        multiplier = np.array([0.05, 0.2, 0.8, 1])
+        our_openings = connectfourutils.count_open_positions(grid_matrix, self._player_colour)[1:] * multiplier
+        opponents_openings = connectfourutils.count_open_positions(grid_matrix, self._other_colour)[1:] * multiplier
+
+        return np.concatenate([our_openings, opponents_openings])
+
+    def _state_value(self, grid_matrix):
+        """The estimated value of the given state matrix.
+
+
+        Args:
+            grid_matrix (np.array): The Connect Four grid as a matrix (as defined in connectfour.py)
+
+        Returns:
+            Estimated value of the state corresponding to the input matrix.
+        """
+        features = self._features(grid_matrix)
+        parameter_vector = self._parameter_vector()
+        return np.dot(features, parameter_vector)
+
+    def _parameter_vector(self):
+        """Return the parameter vector.
+
+        Returns:
+            The parameter vector used to estimate state values
+        """
+        return self._parameters
+
+    def _set_parameter_vector(self, new_vector):
+        """Set the parameter vector.
+
+        Args:
+            new_vector (np.array): The parameter vector for estimating state
+                values.
+        """
+        self._parameters = new_vector
+
+    def _nabla_parameter_vector(self, grid_matrix):
+        """Nabla of state value func with respect to parameter vector in the
+        state defined by grid_matrix.
+
+        Args:
+            grid_matrix (np.array): The state point in which to calculate nabla.
+
+        Returns:
+            np.array. Nabla of state grid_matrix with respect to parameter vector.
+        """
+        return self._features(grid_matrix)
+
 
 def test_simplefeatureplayer():
     """Run match of 2 SimpleFeaturePlayer() instances"""
     import connectfourgame
     player_white = SimpleFeaturePlayer()
     player_red = SimpleFeaturePlayer()
+    match = connectfourgame.ConnectFourMatch(player_white, player_red)
+    match.play()
+
+def test_advancedfeatureplayer():
+    """Run match of 2 AdvancedFeaturePlayer() instances"""
+    import connectfourgame
+    player_white = AdvancedFeaturePlayer()
+    player_red = AdvancedFeaturePlayer()
     match = connectfourgame.ConnectFourMatch(player_white, player_red)
     match.play()
 

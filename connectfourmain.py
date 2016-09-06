@@ -34,6 +34,7 @@ def choose_player():
     print('(R)andom player')
     print('(H)uman player')
     print('(S)imple player')
+    print('(A)dvanced player')
 
     while True:
         choice = input().upper()
@@ -43,7 +44,8 @@ def choose_player():
             return connectfourplayers.HumanPlayer()
         elif choice == 'S':
             return connectfourplayers.SimpleFeaturePlayer()
-
+        elif choice == 'A':
+            return connectfourplayers.AdvancedFeaturePlayer()
 
 def main():
     """Train two players and let user play against them.
